@@ -1,0 +1,311 @@
+---
+title: "Ivy Portfolio with Fidelity"
+author: "Tim Jacobs"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: pdf_document
+---
+
+```{r libraryOpts, echo=FALSE, message=FALSE, warning=FALSE}
+library("knitr")
+library("ggplot2")
+library("gplots")
+library("scales")
+library("ggalt")
+library("tidyquant")
+library("reshape2")
+
+opts_chunk$set(warning=FALSE,
+              message=FALSE,
+              echo = FALSE)
+
+# quandlKey <- "vQwvpzts4Y8Z8bt3nsjc"
+# quandl_api_key(quandlKey)
+```
+
+
+# Introduction
+This document shows the historical values of commission free ETFs available through Fidelity that implement a version of the Ivy Portfolio. The portfolio contains 10 funds that are meant to be uncorrelated. The basic idea behind the Ivy Portfolio investment strategy is to use a diversified portfolio of uncorrelated asset classes in order to avoid losses in the portfolio as a whole. Decisions are made on a monthly basis whether or not to keep each ETF or sell the ETF and hold the cash. Alternatively, the cash from a sold ETF is reinvested in one or more of the other, best performing ETFs. Another strategy is to only keep money in 3 or 4 of the top performing ETFs and rotate the money through the 10 asset classes according to which are performing the best.
+
+
+
+# The ETFs
+```{r getEtfData}
+today <- Sys.Date()
+
+etfs <- data.frame(ETF = c("DBA", "DBC", "IFGL", "IYR", "TIP",
+                           "AGG", "IEMG", "IEFA", "IJR", "ITOT"),
+                   Type = c("Agricultural", "Commodities", "Intl Real Estate",
+                            "US Real Estate", "TIPs Bonds", "US Aggregated Bonds",
+                            "Emerging Markets", "Foreign Total", "S&P Small Cap",
+                            "S&P Total"),
+                   "Commission Free" = c("No", "No", "Yes", "No", "Yes",
+                                         "Yes", "Yes", "Yes", "Yes", "Yes"),
+                   check.names = FALSE)
+
+# ETF Data
+agricultural <- tq_get("DBA", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+agricultural$etf <- "DBA"
+agricultural$type <- etfs[etfs$ETF == "DBA",]$Type
+agricultural <- tq_mutate(agricultural, select = adjusted,
+                          mutate_fun = rollapply, FUN = mean,
+                          width = 200, align = "right",
+                          col_rename = "avg200")
+commodities <- tq_get("DBC", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+commodities$etf <- "DBC"
+commodities$type <- etfs[etfs$ETF == "DBC",]$Type
+commodities <- tq_mutate(commodities, select = adjusted,
+                         mutate_fun = rollapply, FUN = mean,
+                         width = 200, align = "right",
+                         col_rename = "avg200")
+internationalRealEstate <- tq_get("IFGL", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+internationalRealEstate$etf <- "IFGL"
+internationalRealEstate$type <- etfs[etfs$ETF == "IFGL",]$Type
+internationalRealEstate <- tq_mutate(internationalRealEstate, select = adjusted,
+                                     mutate_fun = rollapply, FUN = mean,
+                                     width = 200, align = "right",
+                                     col_rename = "avg200")
+usRealEstate <- tq_get("IYR", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+usRealEstate$etf <- "IYR"
+usRealEstate$type <- etfs[etfs$ETF == "IYR",]$Type
+usRealEstate <- tq_mutate(usRealEstate, select = adjusted,
+                          mutate_fun = rollapply, FUN = mean,
+                          width = 200, align = "right",
+                          col_rename = "avg200")
+tipsBond <- tq_get("TIP", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+tipsBond$etf <- "TIP"
+tipsBond$type <- etfs[etfs$ETF == "TIP",]$Type
+tipsBond <- tq_mutate(tipsBond, select = adjusted,
+                      mutate_fun = rollapply, FUN = mean,
+                      width = 200, align = "right",
+                      col_rename = "avg200")
+aggregatedBond <- tq_get("AGG", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+aggregatedBond$etf <- "AGG"
+aggregatedBond$type <- etfs[etfs$ETF == "AGG",]$Type
+aggregatedBond <- tq_mutate(aggregatedBond, select = adjusted,
+                            mutate_fun = rollapply, FUN = mean,
+                            width = 200, align = "right",
+                            col_rename = "avg200")
+emergingMarkets <- tq_get("IEMG", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+emergingMarkets$etf <- "IEMG"
+emergingMarkets$type <- etfs[etfs$ETF == "IEMG",]$Type
+emergingMarkets <- tq_mutate(emergingMarkets, select = adjusted,
+                             mutate_fun = rollapply, FUN = mean,
+                             width = 200, align = "right",
+                             col_rename = "avg200")
+foreignTotal <- tq_get("IEFA", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+foreignTotal$etf <- "IEFA"
+foreignTotal$type <- etfs[etfs$ETF == "IEFA",]$Type
+foreignTotal <- tq_mutate(foreignTotal, select = adjusted,
+                          mutate_fun = rollapply, FUN = mean,
+                          width = 200, align = "right",
+                          col_rename = "avg200")
+sAndPSmallCap <- tq_get("IJR", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+sAndPSmallCap$etf <- "IJR"
+sAndPSmallCap$type <- etfs[etfs$ETF == "IJR",]$Type
+sAndPSmallCap <- tq_mutate(sAndPSmallCap, select = adjusted,
+                           mutate_fun = rollapply, FUN = mean,
+                           width = 200, align = "right",
+                           col_rename = "avg200")
+sAndPTotal <- tq_get("ITOT", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+sAndPTotal$etf <- "ITOT"
+sAndPTotal$type <- etfs[etfs$ETF == "ITOT",]$Type
+sAndPTotal <- tq_mutate(sAndPTotal, select = adjusted,
+                        mutate_fun = rollapply, FUN = mean,
+                        width = 200, align = "right",
+                        col_rename = "avg200")
+
+portfolioPriceHistory <- rbind(agricultural, commodities, internationalRealEstate,
+                               usRealEstate, tipsBond, aggregatedBond, emergingMarkets,
+                               foreignTotal, sAndPSmallCap, sAndPTotal)
+portfolioPriceHistory$position <- "invested"
+portfolioPriceHistory[which(portfolioPriceHistory$adjusted <
+                              portfolioPriceHistory$avg200),]$position <- "cash"
+
+# Isolate records for each new month
+portfolioPriceHistory$newMonth <- FALSE
+r <- rle(as.POSIXlt(portfolioPriceHistory$date)$mon)
+portfolioPriceHistory[cumsum(r[["lengths"]]) + 1,]$newMonth <- TRUE
+portfolioPriceHistory <- portfolioPriceHistory[complete.cases(portfolioPriceHistory),]
+decisions <- portfolioPriceHistory[portfolioPriceHistory$newMonth,]
+
+# Calculate average absolute return from 3, 6, and 12 month returns
+a <- lapply(unique(decisions$etf), FUN = function(x){decisions[decisions$etf == x,]})
+names(a) <- unique(decisions$etf)
+decisions <-
+  do.call(rbind, lapply(a,
+                        FUN = function(x){
+                          data.frame(x,
+                                     lag3 = c(rep(NA, times = 2), diff(x$adjusted, lag = 2)),
+                                     lag6 = c(rep(NA, times = 5), diff(x$adjusted, lag = 5)),
+                                     lag12 = c(rep(NA, times = 11), diff(x$adjusted, lag = 11))
+                                    )
+                          })
+          )
+
+decisions <- mutate(decisions,
+                    absReturn3 = lag3/adjusted*100,
+                    absReturn6 = lag6/adjusted*100,
+                    absReturn12 = lag12/adjusted*100,
+                    avgReturn = (absReturn3 + absReturn6 + absReturn12)/3)
+
+# Isolate Buy and Sell dates
+r <- rle(decisions$position)
+buySell <- decisions[cumsum(r[["lengths"]]) + 1,]
+buySell <- buySell[complete.cases(buySell),]
+buySell$newMonth <- NULL
+colnames(buySell)[colnames(buySell)=="position"] <- "action"
+buySell[which(buySell$action == "cash"),]$action <- "Sell"
+buySell[which(buySell$action == "invested"),]$action <- "Buy"
+
+rm(a, r)
+```
+
+The Fidelity ETFs were selected by [Scotts Investments](http://www.scottsinvestments.com/). I use the `R` package `tidyquant` to fetch the ETF prices from Yahoo. The table below shows the ETFs chosen for the portfolio.
+
+```{r etfTable}
+kable(etfs)
+```
+
+Fidelity has a commission-free alternative to the IYR; the FREL ETF. And there is a commission-free growth stock alternative to IJR (which is also commission-free); the IJT. It looks to have slightly better performance. There are alternatives to IFGL that have much better performance but are not commission-free. 
+
+
+## Price History
+The plot below shows a history of adjusted closing price for each ETF. One can get a sense of the performance over the past three years as well as some idea of the correlations between each asset class. However a more explicit measurement of cross-correlation will be presented in a section below.
+
+```{r etfHistory}
+portfolioPriceHistory[portfolioPriceHistory$date > as.Date("2015-01-01"),] %>%
+    ggplot(aes(x = date, y = adjusted, color = etf)) +
+    geom_line() +
+    facet_wrap(~ type, scales = "free_y") +
+    ggtitle("Portfolio Line Charts") +
+    ylab("Adjusted Closing Price") +
+    xlab("") + 
+    theme_tq() +
+    theme(strip.text.x = element_text(size = 7))
+```
+
+
+## Asset Class Monthly Returns
+```{r portfolioReturns}
+# Asset Returns
+portfolioMonthlyReturns <- portfolioPriceHistory %>%
+    group_by(etf) %>%
+    tq_transmute(select     = adjusted, 
+                 mutate_fun = periodReturn,
+                 period     = "monthly")
+```
+In this section we look at the monthly returns of each asset class and investigate the correlations between them. Ideally, we will want to measure cross correlations on normally distributed measures. For financial data, this is not guaranteed since returns (or prices) can only go down 100% but theoretically have an infinite upside potential. In many cases, cross correlations on financial data use the log of the measurement. I would rather use the monthly returns directly. The plot below shows histograms of the monthly returns for each ETF. The distributions don't appear to be skewed much. If anything, the IYR (U.S. Real Estate) is skewed slightly to the left. The cross correlations presented in the next section will use the monthly returns directly.
+
+```{r returnsHistogram}
+ggplot(portfolioMonthlyReturns) +
+  geom_histogram(aes(x = monthly.returns), binwidth = 0.02) + 
+  facet_wrap(~ etf, scales = "free_y") +
+  theme_tq() +
+  ggtitle("Monthly Returns Histograms") +
+  xlab("Monthly Return")
+```
+
+
+## Asset Class Correlations
+```{r heatmapFunc}
+generate_heat_map <- function(correlationMatrix, title) {
+  heatmap.2(x = correlationMatrix,
+            cellnote = correlationMatrix,	# places correlation value in each cell
+            main = title,
+            symm = TRUE,			# configure diagram as standard correlation matrix
+            dendrogram="none",		# do not draw a row dendrogram
+            Rowv = FALSE,			# keep ordering consistent
+            trace="none",			# turns off trace lines inside the heat map
+            density.info="none",		# turns off density plot inside color legend
+            col = "terrain.colors",
+            notecol="black")		# set font color of cell labels to black
+}
+```
+
+The asset class cross correlations, shown in the plot below, include monthly returns from August, 2013 to the present. That is the time period for which the monthly returns for all ETFs can be calculated. Negative correlations are represented by the yellow-to-green colors while positive correlations are represented by the orange-to-red-to-white colors. The AGG ETF (US Aggregated Bonds) is negatively correlated to the highest number of the other ETFs in the basket. There are several asset classes (IEFL, IEFA, and IFGL) that are positively correlated to all other asset classes in the basket. These ETFs are clustered in the center of the visualization shown below and are fairly highly correlated to each other. It might be worth remembering this if the rotation strategy (discussed below) dictates that these are the three asset classes where investments should be made.
+
+```{r correlationPlot}
+portfolioMonthlyReturnsWide <- portfolioMonthlyReturns %>%
+  spread(etf, monthly.returns)
+
+portfolioMonthlyReturnsWide <-
+  portfolioMonthlyReturnsWide[complete.cases(portfolioMonthlyReturnsWide),]
+portfolioMonthlyReturnsMaxtix <-
+  round(cor(portfolioMonthlyReturnsWide[, 2:(length(portfolioMonthlyReturnsWide))]) * 100, 2)
+generate_heat_map(portfolioMonthlyReturnsMaxtix, "Correlations of Asset Classes")
+```
+
+
+
+# Using a Timing Strategy
+A strategy is classified as a *timing* strategy if money is either invested or in cash. A strategy is called an *allocation* strategy if money is always invested but the way investments are distributed across funds (or are allocated) changes. There is a subtle difference between a timing strategy and an allocation strategy. The timing strategy described in the book uses a 10 month simple moving average as a threshold to determine whether or not to be invested in a fund or to have the money that would be invested in the fund as cash. The rule is as follows:
+
+> Buy the ETF if the current price is above the 10 month simple moving average of that ETF. Sell the ETF and move to cash if the current price is below the 10 month simple moving average.
+
+This paper uses a 200 day moving average[^movAvg] of the adjusted price to determine the threshold. Decisions as to buy, sell, or hold are only made and executed on the first trading day of the month.
+
+
+[^movAvg]: This assumes there are 20 trading days in a month.
+
+
+The plot below shows the ETFs again but with the 200 day simple moving average and the buy and sell points indicated.
+
+```{r etfBuySell}
+portfolioPriceHistory[portfolioPriceHistory$date > as.Date("2015-01-01"),] %>%
+    ggplot(aes(x = date, y = adjusted, color = etf)) +
+    geom_line() +
+    geom_line(aes(x = date, y = avg200), color = "darkblue", size = 0.5) +
+    facet_wrap(~ type, scales = "free_y") +
+    geom_vline(data = buySell[buySell$date > as.Date("2015-01-01"),],
+               aes(xintercept = date, linetype = action), size = 0.5) +
+    labs(title = "Buy and Sell Points", y = "Adjusted Closing Price", x = "") + 
+    theme_tq() +
+    theme(strip.text.x = element_text(size = 7))
+```
+
+# Timing Strategy Action
+```{r lastTransactions}
+r <- rle(buySell$etf)
+lastTransactions <- buySell[cumsum(r[["lengths"]]),]
+lastTransactions <- lastTransactions[order(lastTransactions$date,
+                                           decreasing = TRUE),]
+```
+The following table shows the last actions that took place for each of the ETFs. The table can simply serve as a reminder of past investment actions, or, if compiled on the first trading day of the month, can serve to identify actions that should be taken. For instance, if the "Action Date" column is the day the document was compiled (i.e., the date in the document's title), then you should take that action.
+
+```{r actionTable}
+kable(lastTransactions[,c("etf", "type", "adjusted", "avg200", "action", "date")],
+      col.names = c("ETF", "Type", "Adjusted Close", "Average", "Action", "Date"),
+      digits = 2,
+      caption = "Last Transaction Date for Each ETF")
+```
+
+
+
+# Using Rotation System
+An alternative to the timing strategy discussed above is the *Rotation* strategy which is an allocation strategy. In this strategy, all of the money is invested in the 3 best-performing asset classes that have returns above the 200 day simple moving average but the asset classes it is invested in can change (or rotate) from month to month. This strategy is designed to give some protection against individual ETF downturns since the investments are chosen to be uncorrelated[^top3]. One of the examples given in the book suggests investing equally in the top 3 performing ETFs. ETF performance is determined by averaging the 3, 6, and 12 month total returns. This calculation again uses the adjusted returns for the calculation and the performance evaluation is again only made on the first trading day of the month. As a tool to aid the investor as to which funds to invest in, the following plot shows the average total return for all of the ETFs, ordered high to low, left to right. Each bar shows the average return for an ETF. The color of the bar shows if the current adjusted price is above or below the 200 day simple moving average.
+
+
+[^top3]: I am not convinced that this rationale holds because the investments are correlated to some extent and it is reasonable to expect that those investment that are performing well at any given time might be more correlated than the average.
+
+```{r momentumBar}
+plotData <- decisions[decisions$date == max(decisions$date),]
+plotData$etf <- factor(plotData$etf,
+                       levels = plotData[order(plotData$avgReturn, decreasing = TRUE),]$etf,
+                       ordered = TRUE)
+ggplot(plotData) +
+  geom_bar(aes(x = etf, y = avgReturn, fill = position), stat = "identity") +
+  theme_tq() +
+  ggtitle("ETF Momentum", subtitle = "Investment in the 3 ETFs with the highest returns") +
+  ylab("Average Total Return")
+```
+
