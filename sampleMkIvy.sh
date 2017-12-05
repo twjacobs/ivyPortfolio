@@ -1,0 +1,1 @@
+export PATH=$PATH:/usr/lib/rstudio/bin/pandoc;Rscript -e "rmarkdown::render('<path to rmd file>/ivyPortfolioFidelity.Rmd', rmarkdown::pdf_document(), output_file = '<path to output pdf>/Monthly Ivy Portfolio Report.pdf')";echo '' | mutt -s 'Your Monthly Ivy Portfolio Report' -i sampleMuttBody.txt -a <path to output pdf>/Monthly\ Ivy\ Portfolio\ Report.pdf -- <email addresses>
