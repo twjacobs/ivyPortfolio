@@ -1,0 +1,326 @@
+---
+title: "IvyDashboard"
+author: "Tim Jacobs"
+date: "1/2/2018"
+output: pdf_document
+header-includes:
+  - \newcommand{\graph}[3]{ \raisebox{-#1mm}{\includegraphics[height=#2em]{#3}}}
+---
+
+```{r libraryOpts, echo=FALSE, message=FALSE, warning=FALSE}
+library("tidyr")
+library("knitr")
+library("ggplot2")
+library("gplots")
+library("scales")
+library("ggalt")
+library("tidyquant")
+library("reshape2")
+library("zoo")
+
+opts_chunk$set(warning = FALSE,
+               message = FALSE,
+               echo = FALSE)
+
+# quandlKey <- "vQwvpzts4Y8Z8bt3nsjc"
+# quandl_api_key(quandlKey)
+```
+
+
+```{r getEtfData}
+today <- Sys.Date()
+
+etfs <- data.frame(ETF = c("DBA", "DBC", "IFGL", "IYR", "TIP",
+                           "AGG", "IEMG", "IEFA", "IJR", "ITOT"),
+                   Type = c("Agriculture Futures", "Commodities", "Intl Real Estate",
+                            "US Real Estate", "TIPs Bonds", "US Aggregated Bonds",
+                            "Emerging Markets", "Foreign Total", "S&P Small Cap",
+                            "S&P Total"),
+                   "Commission Free" = c("No", "No", "Yes", "No", "Yes",
+                                         "Yes", "Yes", "Yes", "Yes", "Yes"),
+                   check.names = FALSE)
+
+# ETF Data
+agricultural <- tq_get("DBA", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+agricultural$etf <- "DBA"
+agricultural$type <- etfs[etfs$ETF == "DBA",]$Type
+agricultural <- tq_mutate(agricultural, select = adjusted,
+                          mutate_fun = rollapply, FUN = mean,
+                          width = 200, align = "right",
+                          col_rename = "avg200")
+
+commodities <- tq_get("DBC", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+commodities$etf <- "DBC"
+commodities$type <- etfs[etfs$ETF == "DBC",]$Type
+commodities <- tq_mutate(commodities, select = adjusted,
+                         mutate_fun = rollapply, FUN = mean,
+                         width = 200, align = "right",
+                         col_rename = "avg200")
+
+internationalRealEstate <- tq_get("IFGL", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+internationalRealEstate$etf <- "IFGL"
+internationalRealEstate$type <- etfs[etfs$ETF == "IFGL",]$Type
+internationalRealEstate <- tq_mutate(internationalRealEstate, select = adjusted,
+                                     mutate_fun = rollapply, FUN = mean,
+                                     width = 200, align = "right",
+                                     col_rename = "avg200")
+
+usRealEstate <- tq_get("IYR", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+usRealEstate$etf <- "IYR"
+usRealEstate$type <- etfs[etfs$ETF == "IYR",]$Type
+usRealEstate <- tq_mutate(usRealEstate, select = adjusted,
+                          mutate_fun = rollapply, FUN = mean,
+                          width = 200, align = "right",
+                          col_rename = "avg200")
+
+tipsBond <- tq_get("TIP", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+tipsBond$etf <- "TIP"
+tipsBond$type <- etfs[etfs$ETF == "TIP",]$Type
+tipsBond <- tq_mutate(tipsBond, select = adjusted,
+                      mutate_fun = rollapply, FUN = mean,
+                      width = 200, align = "right",
+                      col_rename = "avg200")
+
+aggregatedBond <- tq_get("AGG", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+aggregatedBond$etf <- "AGG"
+aggregatedBond$type <- etfs[etfs$ETF == "AGG",]$Type
+aggregatedBond <- tq_mutate(aggregatedBond, select = adjusted,
+                            mutate_fun = rollapply, FUN = mean,
+                            width = 200, align = "right",
+                            col_rename = "avg200")
+
+emergingMarkets <- tq_get("IEMG", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+emergingMarkets$etf <- "IEMG"
+emergingMarkets$type <- etfs[etfs$ETF == "IEMG",]$Type
+emergingMarkets <- tq_mutate(emergingMarkets, select = adjusted,
+                             mutate_fun = rollapply, FUN = mean,
+                             width = 200, align = "right",
+                             col_rename = "avg200")
+
+foreignTotal <- tq_get("IEFA", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+foreignTotal$etf <- "IEFA"
+foreignTotal$type <- etfs[etfs$ETF == "IEFA",]$Type
+foreignTotal <- tq_mutate(foreignTotal, select = adjusted,
+                          mutate_fun = rollapply, FUN = mean,
+                          width = 200, align = "right",
+                          col_rename = "avg200")
+
+sAndPSmallCap <- tq_get("IJR", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+sAndPSmallCap$etf <- "IJR"
+sAndPSmallCap$type <- etfs[etfs$ETF == "IJR",]$Type
+sAndPSmallCap <- tq_mutate(sAndPSmallCap, select = adjusted,
+                           mutate_fun = rollapply, FUN = mean,
+                           width = 200, align = "right",
+                           col_rename = "avg200")
+
+sAndPTotal <- tq_get("ITOT", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+sAndPTotal$etf <- "ITOT"
+sAndPTotal$type <- etfs[etfs$ETF == "ITOT",]$Type
+sAndPTotal <- tq_mutate(sAndPTotal, select = adjusted,
+                        mutate_fun = rollapply, FUN = mean,
+                        width = 200, align = "right",
+                        col_rename = "avg200")
+
+assetPriceHistory <- rbind(agricultural, commodities, internationalRealEstate,
+                           usRealEstate, tipsBond, aggregatedBond, emergingMarkets,
+                           foreignTotal, sAndPSmallCap, sAndPTotal)
+# Asset Returns
+assetMonthlyReturns <- assetPriceHistory %>%
+    group_by(etf) %>%
+    tq_transmute(select     = adjusted, 
+                 mutate_fun = periodReturn,
+                 period     = "monthly")
+
+assetPriceHistory$position <- "invested"
+assetPriceHistory[which(assetPriceHistory$adjusted <
+                          assetPriceHistory$avg200),]$position <- "cash"
+
+# Add a Cash asset for when we are not invested
+# Need dates. We could create a sequence but we don't have
+# a good way to find all the dates the market is closed
+# we'll just use the same dates as the most complete asset
+# data frame
+l <- sapply(unique(assetPriceHistory$etf), FUN = function(x){
+  nrow(assetPriceHistory[assetPriceHistory$etf == x,])
+})
+cashdates <-
+  assetPriceHistory[assetPriceHistory$etf == names(l)[which(l == max(l))][1],]$date
+cash <- data.frame(date = cashdates,
+                   open = 1,
+                   high = 1,
+                   low = 1,
+                   close = 1,
+                   volume = 1,
+                   adjusted = 1,
+                   etf = "CASH",
+                   type = "Cash",
+                   avg200 = 1)
+rm(l, cashdates)
+
+# Isolate records for each new month. This is when
+# decisions and reallocations are made
+assetPriceHistory$newMonth <- FALSE
+r <- rle(as.POSIXlt(assetPriceHistory$date)$mon)
+assetPriceHistory[cumsum(r[["lengths"]]) + 1,]$newMonth <- TRUE
+assetPriceHistory <- assetPriceHistory[complete.cases(assetPriceHistory),]
+decisions <- assetPriceHistory[assetPriceHistory$newMonth,]
+
+# Calculate average absolute return from 3, 6, and 12 month returns
+a <- lapply(unique(decisions$etf), FUN = function(x){decisions[decisions$etf == x,]})
+names(a) <- unique(decisions$etf)
+decisions <-
+  do.call(rbind, lapply(a,
+                        FUN = function(x){
+                          data.frame(x,
+                                     lag3 = c(rep(NA, times = 2), diff(x$adjusted, lag = 2)),
+                                     lag6 = c(rep(NA, times = 5), diff(x$adjusted, lag = 5)),
+                                     lag12 = c(rep(NA, times = 11), diff(x$adjusted, lag = 11))
+                                    )
+                          })
+          )
+
+decisions <- mutate(decisions,
+                    absReturn3 = lag3/adjusted*100,
+                    absReturn6 = lag6/adjusted*100,
+                    absReturn12 = lag12/adjusted*100,
+                    avgReturn = (absReturn3 + absReturn6 + absReturn12)/3)
+
+# Isolate Buy and Sell dates
+r <- rle(decisions$position)
+buySell <- decisions[cumsum(r[["lengths"]]) + 1,]
+buySell <- buySell[complete.cases(buySell),]
+buySell$newMonth <- NULL
+colnames(buySell)[colnames(buySell)=="position"] <- "action"
+buySell[which(buySell$action == "cash"),]$action <- "Sell"
+buySell[which(buySell$action == "invested"),]$action <- "Buy"
+
+rm(a, r)
+
+# Add scaled price and returns data
+assetPriceHistory$scaledPrice <- NA
+assetPriceHistory$scaledAvg200 <- NA
+assetMonthlyReturns$scaledReturns <- NA
+
+for(e in unique(assetPriceHistory$etf)){
+  a <- scale(assetPriceHistory[assetPriceHistory$etf == e, ]$adjusted)
+  b <- scale(assetPriceHistory[assetPriceHistory$etf == e, ]$avg200,
+             center = attr(a, "scaled:center"),
+             scale = attr(a, "scaled:scale"))
+  assetPriceHistory[which(assetPriceHistory$etf == e), ]$scaledPrice <- a
+  assetPriceHistory[which(assetPriceHistory$etf == e), ]$scaledAvg200 <- b
+  
+  a <- scale(assetMonthlyReturns[assetMonthlyReturns$etf == e, ]$monthly.returns,
+             center = FALSE)
+  assetMonthlyReturns[which(assetMonthlyReturns$etf == e), ]$scaledReturns <- a
+}
+
+rm(a, b, e)
+```
+
+
+# Average of 3, 6, and 12 Month Absolute Returns
+
+```{r plotAbsReturns, fig.asp=0.4}
+absReturnPlotData <- decisions[decisions$date == max(decisions$date),]
+absReturnPlotData$etf <-
+  factor(absReturnPlotData$etf,
+         levels = absReturnPlotData[order(absReturnPlotData$avgReturn,
+                                          decreasing = TRUE),]$etf,
+         ordered = TRUE)
+top4 <- head(levels(absReturnPlotData$etf), 4)
+
+ggplot(absReturnPlotData) +
+  geom_bar(aes(x = etf, y = avgReturn, fill = position),
+           stat = "identity") +
+  theme_tq() +
+  theme(legend.position = "none") +
+  scale_fill_manual(values = c("red", "green")) +
+  ylab("Average Total Return")
+```
+
+
+```{r makePlotDataframe}
+a <- decisions
+a$date <- as.yearmon(a$date)
+a$key <- paste(a$date, a$etf)
+
+returnsPlotData <- assetMonthlyReturns[assetMonthlyReturns$date >= Sys.Date() - 600, ]
+returnsPlotData$date <- as.yearmon(returnsPlotData$date)
+returnsPlotData$key <- paste(returnsPlotData$date, returnsPlotData$etf)
+returnsPlotData$position <- a[match(returnsPlotData$key, a$key),]$position
+returnsPlotData$etf <- factor(returnsPlotData$etf,
+                              levels(absReturnPlotData$etf),
+                              ordered = TRUE)
+returnsPlotDataTop4 <- returnsPlotData[returnsPlotData$etf %in% top4,]
+returnsPlotDataBonds <- returnsPlotData[returnsPlotData$etf %in% c("TIP", "AGG"),]
+
+pricePlotData <- assetPriceHistory[assetPriceHistory$date >= Sys.Date() - 600, ]
+a <- rle(pricePlotData$position)
+groups <- rep(1:length(a$lengths), times = a$lengths)
+pricePlotData$group <- groups
+pricePlotData$etf <- factor(pricePlotData$etf,
+                            levels(absReturnPlotData$etf),
+                            ordered = TRUE)
+pricePlotDataTop4 <- pricePlotData[pricePlotData$etf %in% top4,]
+pricePlotDataBonds <- pricePlotData[pricePlotData$etf %in% c("TIP", "AGG"),]
+rm(a, groups)
+```
+
+
+# Bull Market Monthly Performance (top 4 highest returns)
+
+```{r plotBullPerformance, fig.asp=0.65}
+ggplot() +
+  geom_line(data = pricePlotDataTop4,
+            aes(x = date, y = scaledPrice)) +
+  geom_line(data = pricePlotDataTop4,
+            aes(x = date, y = scaledAvg200), color = "red") +
+  geom_bar(data = returnsPlotDataTop4,
+           aes(x = as.Date(date)+15, y = scaledReturns,
+               fill = scaledReturns < 0,
+               color = position),
+           alpha = 0.4,
+           stat = "identity") +
+  facet_grid(etf~.) +
+  theme_tq() +
+  theme(legend.position = "none",
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank()) +
+  scale_fill_manual(values = c("green", "red")) +
+  scale_color_manual(values = c("red", "green")) 
+```
+
+
+# Bear Market Monthly Performance (Bonds)
+
+```{r plotBearPerformance, fig.asp=0.65}
+ggplot() +
+  geom_line(data = pricePlotDataBonds,
+            aes(x = date, y = scaledPrice)) +
+  geom_line(data = pricePlotDataBonds,
+            aes(x = date, y = scaledAvg200), color = "red") +
+  geom_bar(data = returnsPlotDataBonds,
+           aes(x = as.Date(date)+15, y = scaledReturns,
+               fill = scaledReturns < 0,
+               color = position),
+           alpha = 0.4,
+           stat = "identity") +
+  facet_grid(etf~.) +
+  theme_tq() +
+  theme(legend.position = "none",
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank()) +
+  scale_fill_manual(values = c("green", "red")) +
+  scale_color_manual(values = c("red", "green")) 
+```
+

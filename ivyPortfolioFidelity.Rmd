@@ -34,7 +34,7 @@ today <- Sys.Date()
 
 etfs <- data.frame(ETF = c("DBA", "DBC", "IFGL", "IYR", "TIP",
                            "AGG", "IEMG", "IEFA", "IJR", "ITOT"),
-                   Type = c("Agricultural", "Commodities", "Intl Real Estate",
+                   Type = c("Agriculture Futures", "Commodities", "Intl Real Estate",
                             "US Real Estate", "TIPs Bonds", "US Aggregated Bonds",
                             "Emerging Markets", "Foreign Total", "S&P Small Cap",
                             "S&P Total"),
@@ -208,6 +208,29 @@ The Fidelity ETFs were selected by [Scotts Investments](http://www.scottsinvestm
 ```{r etfTable}
 kable(etfs)
 ```
+
+A brief description of these ETFs follows:
+
+* **AGG**: The iShares Core U.S. Aggregate Bond ETF seeks to track the investment results of an index composed of the total U.S. investment-grade bond market. The fund has an expense ratio of 0.06%. The top holdings include the United States Treasury at	37.74%, the Federal National Mortage Association at 12.63% and the Federal Home Loan Mortgage Corporation - Gold  at 7.57%.
+
+* **TIP**: The iShares TIPS Bond ETF seeks to track the investment results of an index composed of inflation-protected U.S. Treasury bonds. The fund has an expense ratio of 0.20%. The holdings are almost exclusively US Treasury Notes.
+
+* **DBA**: The PowerShares DB Agriculture Index Tracking Fund seeks to track changes in the level of the DBIQ Diversified Agriculture Index Excess Return™. The Fund is designed for investors who want a cost-effective and convenient way to invest in agricultural futures. The top holdings in the fund include Live Cattle at 16.42%, Soybeans at 13.11%, Corn at 12.32%, Lean Hogs at 10.05%, Cocoa at 9.65%, Sugar at 9.06%, Coffee at 8.29%, Wheat at 6.11%, Kansas Wheat at 6.11%, and Feeder Cattle 5.91%. The Fund and the Index are rebalanced and reconstituted annually in November.
+
+* **DBC**: The PowerShares DB Commodity Index Tracking Fund seeks to track changes in the level of the DBIQ Optimum Yield Diversified Commodity Index Excess Return™. The Fund is designed for investors who want a cost-effective and convenient way to invest in commodity futures. The Index is composed of futures contracts on 14 of the most heavily traded and important physical commodities in the world. The top holdings in the fund include WTI Crude at 12.84%, NY Harbor ULSD at 12.69%, Brent Crude at 12.67%, Gasoline	at 11.90%, Gold at 8.07%, Sugar at 5.58%, Corn at 5.44%, Wheat at 5.43%, Soybeans at 5.40%, Natural Gas at 5.10%, Aluminium at 4.39%, Copper at 4.30%, Zinc at 4.22%, and Silver at 1.97%. The Fund and the Index are rebalanced and reconstituted annually in November.
+
+* **IFGL**: The iShares International Developed Real Estate ETF seeks to track the investment results of an index composed of real estate equities in developed non-U.S markets. The expense ratio is 0.48%. The top holdings are UL	UNIBAIL-RODAMCO SE REIT	(France) at 3.50%, CK ASSET HOLDINGS LTD (Hong Kong) at 3.37%, SUN HUNG KAI PROPERTIES LTD (Hong Kong) at 3.36%, VNA	VONOVIA SE (Germany) at 3.35%, MITSUI FUDOSAN LTD (Japan) 2.99% LINK REAL ESTATE INVESTMENT TRUST (Hong Kong) at 2.96%, MITSUBISHI ESTATE CO LTD (Japan) at 2.90%, SCG	SCENTRE GROUP (Australia) at 2.35%, DEUTSCHE WOHNEN	Real Estate (Germany) at 2.15%, and SUMITOMO REALTY & DEVELOPMENT LTD (Japan) 1.99%.
+
+* **IYR**: The iShares U.S. Real Estate ETF seeks to track the investment results of an index composed of U.S. equities in the real estate sector. The expense ratio is 0.44%. The top holdings are MERICAN TOWER REIT CORP at 5.80%, SIMON PROPERTY GROUP REIT INC at 5.14%, CCI	CROWN CASTLE INTERNATIONAL REIT CO at 4.24%, EQIX	EQUINIX REIT INC at 3.35%, PLD	PROLOGIS REIT INC at 3.26%, PSA	PUBLIC STORAGE REIT at 2.96%, WEYERHAEUSER REIT at 2.55%, AVB	AVALONBAY COMMUNITIES REIT INC at 2.35%, HCN	WELLTOWER INC at 2.27%, and EQR	EQUITY RESIDENTIAL REIT  at 2.23%.	
+
+* **IEMG**: The iShares Core MSCI Emerging Markets ETF seeks to track the investment results of an index composed of large-, mid- and small-capitalization emerging market equities. The expense ratio is 0.14%. The top holdings are TENCENT HOLDINGS LTD (China) 4.77%, SAMSUNG ELECTRONICS LTD (South Korea) 3.68%, BABA	ALIBABA GROUP HOLDING ADR REPRESEN, (China) 3.32%,  TAIWAN SEMICONDUCTOR MANUFACTURING (Taiwan) 3.04%, NPN	NASPERS LIMITED N LTD (South Africa) 1.99%, CHINA CONSTRUCTION BANK CORP H	(China)	1.26%, BIDU	BAIDU ADR REPTG INC CLASS A (China)	1.04%, CHINA MOBILE LTD	(China)	0.99%, INDUSTRIAL AND COMMERCIAL BANK OF (China) 0.96%, and PING AN INSURANCE (GROUP) CO OF CH (China) 0.89%.	
+
+* **IEFA**: The iShares Core MSCI EAFE ETF seeks to track the investment results of an index composed of large-, mid- and small-capitalization developed market equities, excluding the U.S. and Canada. The expense ratio is 0.08%. The top holdings are NESN	NESTLE SA (Switzerland) 1.50%, HSBC HOLDINGS PLC (United Kingdom) 1.17%, NOVN	NOVARTIS AG (Switzerland) 1.06%, ROCHE HOLDING PAR AG (Switzerland) 1.00%, TOYOTA MOTOR CORP (Japan) 0.94%, BATS	BRITISH AMERICAN TOBACCO PLC (United Kingdom) 0.87%, ROYAL DUTCH SHELL PLC CLASS A (United Kingdom) 0.85%, BP PLC	Energy (United Kingdom) 0.77%, TOTAL SA (France) 0.74%, and ROYAL DUTCH SHELL PLC CLASS B (United Kingdom) 0.71%.
+
+* **IJR**: The iShares Core S&P Small-Cap ETF seeks to track the investment results of an index composed of small-capitalization U.S. equities. The expense ratio is 0.07%. The top holdings are NEKTAR THERAPEUTICS 1.15%, CHEMED CORP 0.50%, FIVE BELOW INC 0.48%, HEALTHCARE SERVICES INC 0.48%, ALLETE INC 0.48%, CANTEL MEDICAL CORP 0.46%, SPIRE INC 0.46%, EVERCORE INC CLASS A 0.45%, JOHN BEAN TECHNOLOGIES CORP 0.44%, and PDC ENERGY INC	Energy 0.44%.	
+
+* **ITOT**: The iShares Core S&P Total U.S. Stock Market ETF seeks to track the investment results of a broad-based index composed of U.S. equities. The expense ratio is 0.03%. The top holdings are APPLE INC 3.13%, MICROSOFT CORP 2.38%, AMAZON COM INC 1.69%, FACEBOOK CLASS A INC 1.52%, BERKSHIRE HATHAWAY INC CLASS B 1.37%, JOHNSON & JOHNSON 1.35%, JPMORGAN CHASE & CO 1.34%, EXXON MOBIL CORP 1.27%, ALPHABET INC CLASS C 1.14%, and ALPHABET INC CLASS A 1.13%.	
+
 
 Fidelity has a commission-free alternative to the IYR (which is not commissionn-free); the FREL ETF. And there is a commission-free growth stock alternative to IJR (which is also commission-free); the IJT. It looks to have slightly better performance. There are alternatives to IFGL that have much better performance but are not commission-free. 
 
@@ -519,7 +542,7 @@ kable(lastTransactions[,c("etf", "type", "adjusted", "avg200", "action", "date")
 
 The annualized return for the timing strategy is `r timingAnnualizedReturn`%. This is even lower than the passive annualized return of `r passiveAnnualizedReturn`%. The maximum drawdown for this strategy is `timingMaxDrawdown`% -- much lower than both the passive strategy maximum drawdown of `r passiveMaxDrawdown`% and the baseline maximum drawdown of `r baselineMaxDrawdown`%. The growth for this strategy is shown below.
 
-```{r timintPerformancePlot}
+```{r timingPerformancePlot}
 plotData <- rbind(timingGrowthMonthly, passiveGrowthMonthly, baselineGrowthMonthly)
 plotData %>%
   ggplot(aes(x = date, y = investment.growth,
