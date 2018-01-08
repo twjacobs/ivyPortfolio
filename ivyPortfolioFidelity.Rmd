@@ -32,6 +32,25 @@ This document shows the historical values of commission free ETFs available thro
 ```{r getEtfData}
 today <- Sys.Date()
 
+# NBER Recession indicators
+nberIdx <- read.csv("./USREC.csv", row.names = NULL)
+colnames(nberIdx) <- c("date", "recession")
+
+# Find beginning and end of recession periods
+nberIdxRunLength <- rle(nberIdx$recession)
+cs <- cumsum(nberIdxRunLength[[1]])
+begin <- nberIdx$date[cs[nberIdxRunLength[[2]] == 0]+1]
+begin <- begin[!is.na(begin)]
+end <- nberIdx$date[cs[nberIdxRunLength[[2]] == 1]]
+end <- end[2:length(end)]
+
+recessions <- data.frame(begin = begin, end = end)
+recessions$begin <- as.Date(recessions$begin)
+recessions$end <- as.Date(recessions$end)
+
+
+
+# Get Ivy ETF data
 etfs <- data.frame(ETF = c("DBA", "DBC", "IFGL", "IYR", "TIP",
                            "AGG", "IEMG", "IEFA", "IJR", "ITOT"),
                    Type = c("Agriculture Futures", "Commodities", "Intl Real Estate",
@@ -171,6 +190,7 @@ assetPriceHistory[cumsum(r[["lengths"]]) + 1,]$newMonth <- TRUE
 assetPriceHistory <- assetPriceHistory[complete.cases(assetPriceHistory),]
 decisions <- assetPriceHistory[assetPriceHistory$newMonth,]
 
+
 # Calculate average absolute return from 3, 6, and 12 month returns
 a <- lapply(unique(decisions$etf), FUN = function(x){decisions[decisions$etf == x,]})
 names(a) <- unique(decisions$etf)
@@ -211,47 +231,51 @@ kable(etfs)
 
 A brief description of these ETFs follows:
 
-* **AGG**: The iShares Core U.S. Aggregate Bond ETF seeks to track the investment results of an index composed of the total U.S. investment-grade bond market. The fund has an expense ratio of 0.06%. The top holdings include the United States Treasury at	37.74%, the Federal National Mortage Association at 12.63% and the Federal Home Loan Mortgage Corporation - Gold  at 7.57%.
+* **AGG**: The iShares Core U.S. Aggregate Bond ETF seeks to track the investment results of an index composed of the total U.S. investment-grade bond market. The fund has an expense ratio of 0.06%. The top holdings include the United States Treasury at	37.74%, the Federal National Mortgage Association at 12.63% and the Federal Home Loan Mortgage Corporation - Gold  at 7.57%. Data for this ETF starts on `r min(aggregatedBond$date)`.
 
-* **TIP**: The iShares TIPS Bond ETF seeks to track the investment results of an index composed of inflation-protected U.S. Treasury bonds. The fund has an expense ratio of 0.20%. The holdings are almost exclusively US Treasury Notes.
+* **TIP**: The iShares TIPS Bond ETF seeks to track the investment results of an index composed of inflation-protected U.S. Treasury bonds. The fund has an expense ratio of 0.20%. The holdings are almost exclusively US Treasury Notes. Data for this ETF start on `r min(tipsBond$date)`.
 
-* **DBA**: The PowerShares DB Agriculture Index Tracking Fund seeks to track changes in the level of the DBIQ Diversified Agriculture Index Excess Return™. The Fund is designed for investors who want a cost-effective and convenient way to invest in agricultural futures. The top holdings in the fund include Live Cattle at 16.42%, Soybeans at 13.11%, Corn at 12.32%, Lean Hogs at 10.05%, Cocoa at 9.65%, Sugar at 9.06%, Coffee at 8.29%, Wheat at 6.11%, Kansas Wheat at 6.11%, and Feeder Cattle 5.91%. The Fund and the Index are rebalanced and reconstituted annually in November.
+* **DBA**: The PowerShares DB Agriculture Index Tracking Fund seeks to track changes in the level of the DBIQ Diversified Agriculture Index Excess Return™. The Fund is designed for investors who want a cost-effective and convenient way to invest in agricultural futures. The top holdings in the fund include Live Cattle at 16.42%, Soybeans at 13.11%, Corn at 12.32%, Lean Hogs at 10.05%, Cocoa at 9.65%, Sugar at 9.06%, Coffee at 8.29%, Wheat at 6.11%, Kansas Wheat at 6.11%, and Feeder Cattle 5.91%. The Fund and the Index are re-balanced and reconstituted annually in November. Data for this ETF start on `r min(agricultural$date)`. 
 
-* **DBC**: The PowerShares DB Commodity Index Tracking Fund seeks to track changes in the level of the DBIQ Optimum Yield Diversified Commodity Index Excess Return™. The Fund is designed for investors who want a cost-effective and convenient way to invest in commodity futures. The Index is composed of futures contracts on 14 of the most heavily traded and important physical commodities in the world. The top holdings in the fund include WTI Crude at 12.84%, NY Harbor ULSD at 12.69%, Brent Crude at 12.67%, Gasoline	at 11.90%, Gold at 8.07%, Sugar at 5.58%, Corn at 5.44%, Wheat at 5.43%, Soybeans at 5.40%, Natural Gas at 5.10%, Aluminium at 4.39%, Copper at 4.30%, Zinc at 4.22%, and Silver at 1.97%. The Fund and the Index are rebalanced and reconstituted annually in November.
+* **DBC**: The PowerShares DB Commodity Index Tracking Fund seeks to track changes in the level of the DBIQ Optimum Yield Diversified Commodity Index Excess Return™. The Fund is designed for investors who want a cost-effective and convenient way to invest in commodity futures. The Index is composed of futures contracts on 14 of the most heavily traded and important physical commodities in the world. The top holdings in the fund include WTI Crude at 12.84%, NY Harbor ULSD at 12.69%, Brent Crude at 12.67%, Gasoline	at 11.90%, Gold at 8.07%, Sugar at 5.58%, Corn at 5.44%, Wheat at 5.43%, Soybeans at 5.40%, Natural Gas at 5.10%, Aluminium at 4.39%, Copper at 4.30%, Zinc at 4.22%, and Silver at 1.97%. The Fund and the Index are re-balanced and reconstituted annually in November. Data for this ETF starts on `r min(commodities$date)`.
 
-* **IFGL**: The iShares International Developed Real Estate ETF seeks to track the investment results of an index composed of real estate equities in developed non-U.S markets. The expense ratio is 0.48%. The top holdings are UL	UNIBAIL-RODAMCO SE REIT	(France) at 3.50%, CK ASSET HOLDINGS LTD (Hong Kong) at 3.37%, SUN HUNG KAI PROPERTIES LTD (Hong Kong) at 3.36%, VNA	VONOVIA SE (Germany) at 3.35%, MITSUI FUDOSAN LTD (Japan) 2.99% LINK REAL ESTATE INVESTMENT TRUST (Hong Kong) at 2.96%, MITSUBISHI ESTATE CO LTD (Japan) at 2.90%, SCG	SCENTRE GROUP (Australia) at 2.35%, DEUTSCHE WOHNEN	Real Estate (Germany) at 2.15%, and SUMITOMO REALTY & DEVELOPMENT LTD (Japan) 1.99%.
+* **IFGL**: The iShares International Developed Real Estate ETF seeks to track the investment results of an index composed of real estate equities in developed non-U.S markets. The expense ratio is 0.48%. The top holdings are Unibail-Rodamco SE REIT (France) at 3.50%, CK Asset Holdings LTD (Hong Kong) at 3.37%, Sun Hunk Kai Properties LTD (Hong Kong) at 3.36%, Vonovia SE (Germany) at 3.35%, Mitsui Fudosan LTD (Japan) 2.99% Link Real Estate Investment Trust (Hong Kong) at 2.96%, Mitsubishi Estate CO LTD (Japan) at 2.90%, SCG	Scentre Group (Australia) at 2.35%, Deutsche Wohnen	Real Estate (Germany) at 2.15%, and Sumitomo Reality & Development LTD (Japan) 1.99%. The data on this ETF start on `r min(internationalRealEstate$date)`.
 
-* **IYR**: The iShares U.S. Real Estate ETF seeks to track the investment results of an index composed of U.S. equities in the real estate sector. The expense ratio is 0.44%. The top holdings are MERICAN TOWER REIT CORP at 5.80%, SIMON PROPERTY GROUP REIT INC at 5.14%, CCI	CROWN CASTLE INTERNATIONAL REIT CO at 4.24%, EQIX	EQUINIX REIT INC at 3.35%, PLD	PROLOGIS REIT INC at 3.26%, PSA	PUBLIC STORAGE REIT at 2.96%, WEYERHAEUSER REIT at 2.55%, AVB	AVALONBAY COMMUNITIES REIT INC at 2.35%, HCN	WELLTOWER INC at 2.27%, and EQR	EQUITY RESIDENTIAL REIT  at 2.23%.	
+* **IYR**: The iShares U.S. Real Estate ETF seeks to track the investment results of an index composed of U.S. equities in the real estate sector. The expense ratio is 0.44%. The top holdings are Merican Tower REIT Corp at 5.80%, Simon Property Group REIT Inc at 5.14%, Crown Castle International REIT Co at 4.24%, Equinix REIT Inc at 3.35%, Prologis REIT Inc at 3.26%, Public Storage REIT at 2.96%, Weyerhaeuser REIT at 2.55%, Avalonbay Communities REIT Inc at 2.35%, Welltower Inc at 2.27%, and	Equity Residential REIT  at 2.23%. The data on this ETF start on `r min(usRealEstate$date)`
 
-* **IEMG**: The iShares Core MSCI Emerging Markets ETF seeks to track the investment results of an index composed of large-, mid- and small-capitalization emerging market equities. The expense ratio is 0.14%. The top holdings are TENCENT HOLDINGS LTD (China) 4.77%, SAMSUNG ELECTRONICS LTD (South Korea) 3.68%, BABA	ALIBABA GROUP HOLDING ADR REPRESEN, (China) 3.32%,  TAIWAN SEMICONDUCTOR MANUFACTURING (Taiwan) 3.04%, NPN	NASPERS LIMITED N LTD (South Africa) 1.99%, CHINA CONSTRUCTION BANK CORP H	(China)	1.26%, BIDU	BAIDU ADR REPTG INC CLASS A (China)	1.04%, CHINA MOBILE LTD	(China)	0.99%, INDUSTRIAL AND COMMERCIAL BANK OF (China) 0.96%, and PING AN INSURANCE (GROUP) CO OF CH (China) 0.89%.	
+* **IEMG**: The iShares Core MSCI Emerging Markets ETF seeks to track the investment results of an index composed of large-, mid- and small-capitalization emerging market equities. The expense ratio is 0.14%. The top holdings are Tencent Holdings Ltd (China) 4.77%, Samsung Electronics Ltd (South Korea) 3.68%, Alibaba Group Holding ADR Represen, (China) 3.32%, Taiwan Semiconductor Manufacturing (Taiwan) 3.04%, Naspers Limited N Ltd (South Africa) 1.99%, China Construction Bank Corp H	(China)	1.26%, Baidu ADR Reptg Inc Class A (China)	1.04%, China Mobile Ltd	(China)	0.99%, Industrial And Commercial Bank Of China (China) 0.96%, and Ping An Insurance Group Co Of CHINA (China) 0.89%. The data for this ETF start on `r min(emergingMarkets$date)`.	
 
-* **IEFA**: The iShares Core MSCI EAFE ETF seeks to track the investment results of an index composed of large-, mid- and small-capitalization developed market equities, excluding the U.S. and Canada. The expense ratio is 0.08%. The top holdings are NESN	NESTLE SA (Switzerland) 1.50%, HSBC HOLDINGS PLC (United Kingdom) 1.17%, NOVN	NOVARTIS AG (Switzerland) 1.06%, ROCHE HOLDING PAR AG (Switzerland) 1.00%, TOYOTA MOTOR CORP (Japan) 0.94%, BATS	BRITISH AMERICAN TOBACCO PLC (United Kingdom) 0.87%, ROYAL DUTCH SHELL PLC CLASS A (United Kingdom) 0.85%, BP PLC	Energy (United Kingdom) 0.77%, TOTAL SA (France) 0.74%, and ROYAL DUTCH SHELL PLC CLASS B (United Kingdom) 0.71%.
+* **IEFA**: The iShares Core MSCI EAFE ETF seeks to track the investment results of an index composed of large-, mid- and small-capitalization developed market equities, excluding the U.S. and Canada. The expense ratio is 0.08%. The top holdings are NESN	NESTLE SA (Switzerland) 1.50%, HSBC HOLDINGS PLC (United Kingdom) 1.17%, NOVN	NOVARTIS AG (Switzerland) 1.06%, ROCHE HOLDING PAR AG (Switzerland) 1.00%, TOYOTA MOTOR CORP (Japan) 0.94%, BATS	BRITISH AMERICAN TOBACCO PLC (United Kingdom) 0.87%, ROYAL DUTCH SHELL PLC CLASS A (United Kingdom) 0.85%, BP PLC	Energy (United Kingdom) 0.77%, TOTAL SA (France) 0.74%, and ROYAL DUTCH SHELL PLC CLASS B (United Kingdom) 0.71%. The data for this ETF start on `r min(foreignTotal$date)`.
 
-* **IJR**: The iShares Core S&P Small-Cap ETF seeks to track the investment results of an index composed of small-capitalization U.S. equities. The expense ratio is 0.07%. The top holdings are NEKTAR THERAPEUTICS 1.15%, CHEMED CORP 0.50%, FIVE BELOW INC 0.48%, HEALTHCARE SERVICES INC 0.48%, ALLETE INC 0.48%, CANTEL MEDICAL CORP 0.46%, SPIRE INC 0.46%, EVERCORE INC CLASS A 0.45%, JOHN BEAN TECHNOLOGIES CORP 0.44%, and PDC ENERGY INC	Energy 0.44%.	
+* **IJR**: The iShares Core S&P Small-Cap ETF seeks to track the investment results of an index composed of small-capitalization U.S. equities. The expense ratio is 0.07%. The top holdings are Nektar Therapeutics 1.15%, Chemed Corp 0.50%, Five Below Inc 0.48%, Healthcare Services Inc 0.48%, Allete Inc 0.48%, Cantel Medical Corp 0.46%, Spire Inc 0.46%, Evercore Inc Class A 0.45%, John Bean Technologies Corp 0.44%, and PDC Energy Inc	Energy 0.44%.	The data for this ETF start on `r min(sAndPSmallCap$date)`.
 
-* **ITOT**: The iShares Core S&P Total U.S. Stock Market ETF seeks to track the investment results of a broad-based index composed of U.S. equities. The expense ratio is 0.03%. The top holdings are APPLE INC 3.13%, MICROSOFT CORP 2.38%, AMAZON COM INC 1.69%, FACEBOOK CLASS A INC 1.52%, BERKSHIRE HATHAWAY INC CLASS B 1.37%, JOHNSON & JOHNSON 1.35%, JPMORGAN CHASE & CO 1.34%, EXXON MOBIL CORP 1.27%, ALPHABET INC CLASS C 1.14%, and ALPHABET INC CLASS A 1.13%.	
+* **ITOT**: The iShares Core S&P Total U.S. Stock Market ETF seeks to track the investment results of a broad-based index composed of U.S. equities. The expense ratio is 0.03%. The top holdings are Apple Inc 3.13%, Microsoft Corp 2.38%, Amazon Com Inc 1.69%, Facebook Class A Inc 1.52%, Berkshire Hathaway Inc Class B 1.37%, Johnson & Johnson 1.35%, JP Morgan Chase & CO 1.34%, Exxon Mobil Corp 1.27%, Alphabet Inc Class C 1.14%, and Alphabet Inc Class A 1.13%. The data for this ETF start on `r min(sAndPTotal$date)`.
 
-
-Fidelity has a commission-free alternative to the IYR (which is not commissionn-free); the FREL ETF. And there is a commission-free growth stock alternative to IJR (which is also commission-free); the IJT. It looks to have slightly better performance. There are alternatives to IFGL that have much better performance but are not commission-free. 
+Fidelity has a commission-free alternative to the IYR (which is not commission-free); the FREL ETF. And there is a commission-free growth stock alternative to IJR (which is also commission-free); the IJT. It looks to have slightly better performance. There are alternatives to IFGL that have much better performance but are not commission-free. 
 
 
 ## Adjusted Closing Price History
-The plot below shows a history of adjusted closing price for each ETF. One can get a sense of the performance over the years as well as some idea of the correlations between each asset class. However a more explicit measurement of cross-correlation will be presented in a section below. Note that Emerging Markets and Foreign Total Maket ETFs are relatively new and the Commodities, Agriculture and International Real Estate ETFs also do not have as long a history as the US Bond and Equities Markets ETFs. Whe evaluating the performance of portfolios containing this collectin of asset classes, only the price history dates that cover all asset classes will be included.
+The plot below shows a history of adjusted closing price for each ETF. One can get a sense of the performance over the years as well as some idea of the correlations between each asset class. However a more explicit measurement of cross-correlation will be presented in a section below. Note that Emerging Markets and Foreign Total Market ETFs are relatively new and the Commodities, Agriculture and International Real Estate ETFs also do not have as long a history as the US Bond and Equities Markets ETFs. Commodities, both agricultural and physical, peaked in 2008 but crashed along with the other asset classes in the depression. The most robust asset class throughout the depression was the US investment grade corporate bond market which did experience a precipitous decline but recovered almost immediately.
 
-```{r etfHistory}
-assetPriceHistory %>%
-    ggplot(aes(x = date, y = adjusted, color = etf)) +
-    geom_line() +
-    facet_wrap(~ type, scales = "free_y") +
-    ggtitle("Asset Clases Line Charts") +
-    ylab("Adjusted Closing Price") +
-    xlab("") + 
-    theme_tq() +
-    theme(strip.text.x = element_text(size = 7))
+```{r etfHistoryPlot}
+ggplot() +
+  geom_line(data = assetPriceHistory,
+            aes(x = date, y = adjusted, color = etf)) +
+  geom_rect(data = recessions[recessions$begin >= min(assetPriceHistory$date), ],
+            aes(xmin = begin, xmax = end,
+                ymin = -Inf, ymax = Inf),
+            alpha = 0.4) +
+  facet_wrap(~ type, scales = "free_y") +
+  ggtitle("Asset Clases Line Charts") +
+  ylab("Adjusted Closing Price") +
+  xlab("") + 
+  theme_tq() +
+  theme(strip.text.x = element_text(size = 7))
 ```
 
 
 ## Asset Class Monthly Returns
+In this section we look at the monthly returns of each asset class and investigate the correlations between them.
 ```{r portfolioReturns}
 # Asset Returns
 assetMonthlyReturns <- assetPriceHistory %>%
@@ -260,19 +284,23 @@ assetMonthlyReturns <- assetPriceHistory %>%
                  mutate_fun = periodReturn,
                  period     = "monthly")
 ```
-In this section we look at the monthly returns of each asset class and investigate the correlations between them. Ideally, we will want to measure cross correlations on normally distributed measures. For financial data, this is not guaranteed since returns (or prices) can only go down 100% but theoretically have an infinite upside potential. In many cases, cross correlations on financial data use the log of the measurement. I would rather use the monthly returns directly. The plot below shows histograms of the monthly returns for each ETF. The distributions don't appear to be skewed much. If anything, the IYR (U.S. Real Estate) is skewed slightly to the left. The cross correlations presented in the next section will use the monthly returns directly.
 
-```{r returnsHistogram}
+Histograms of the monthly returns for each ETF are shown in the next plot. As expected, the monthly returns for the bond products (AGG and TIP) have narrower distributions than the other ETFs. Some of the most variable returns are seen in the agricultural and physical commodities (DBA, DBC). The returns associated with United States real estate (IYR) is also quite variable.
+
+```{r monthlyReturnsHistogram}
+# ggplot(assetMonthlyReturns[assetMonthlyReturns$date >= as.Date("2013-07-31"),]) +
 ggplot(assetMonthlyReturns) +
-  geom_histogram(aes(x = monthly.returns), binwidth = 0.02) + 
+  geom_histogram(aes(x = monthly.returns), binwidth = 0.01) + 
   facet_wrap(~ etf, scales = "free_y") +
   theme_tq() +
-  ggtitle("Monthly Returns Histograms") +
+  ggtitle("Monthly Returns Histograms",
+          subtitle = "History covered depends on when the ETF product was created.") +
   xlab("Monthly Return")
 ```
 
 
 ## Asset Class Correlations
+Ideally, we will want to measure cross correlations on normally distributed measures. For financial data, this is not guaranteed since returns (or prices) can only go down 100% but theoretically have an infinite upside potential. In many cases, cross correlations on financial data use the log of the measurement. I would rather use the monthly returns directly. The histograms of monthly returns plotted above do not show any significant skew and the cross correlations presented in this section will use the monthly returns directly.
 ```{r heatmapFunc}
 generate_heat_map <- function(correlationMatrix, title) {
   heatmap.2(x = correlationMatrix,
@@ -288,7 +316,7 @@ generate_heat_map <- function(correlationMatrix, title) {
 }
 ```
 
-The asset class cross correlations, shown in the plot below, include monthly returns from August, 2013 to the present. That is the time period for which the monthly returns for all ETFs can be calculated. Negative correlations are represented by the yellow-to-green colors while positive correlations are represented by the orange-to-red-to-white colors. The AGG ETF (US Aggregated Bonds) is negatively correlated to the highest number of the other ETFs in the basket. There are several asset classes (IEFL, IEFA, and IFGL) that are positively correlated to all other asset classes in the basket. These ETFs are clustered in the center of the visualization shown below and are fairly highly correlated to each other. It might be worth remembering this if the rotation strategy (discussed below) dictates that these are the three asset classes where investments should be made.
+The asset class cross correlations shown in the plot below include monthly returns from August, 2013 to the present. That is the time period for which the monthly returns for all ETFs can be calculated. Negative correlations are represented by the yellow-to-green colors while positive correlations are represented by the orange-to-red-to-white colors. The AGG ETF (Aggregated US investment-grade Bonds) is negatively correlated to the highest number of the other ETFs in the basket. There are several asset classes (IEFL, IEFA, and IFGL) that are positively correlated to all other asset classes in the basket. These ETFs are clustered in the center of the visualization shown below and are fairly highly correlated to each other. It might be worth remembering this if the rotation strategy (discussed below) dictates that these are the three asset classes where investments should be made.
 
 ```{r correlationPlot}
 assetMonthlyReturnsWide <- assetMonthlyReturns %>%
@@ -475,12 +503,12 @@ In this section the portfolio performance is evaluated using several different i
 
 * A timing strategy, in which the a decision is made for each asset class as to whether to be invested or in cash. The decision is based on a 10 month simple moving average.
 
-* An allocation strategy, in which the investment money is (usually) allways invested, but the asset classes invested in are only the top 2 or 3 performing asset classes in the portfolio as long as those asset class prices are above the 10 month simple moving average and the performance of those asset classes is not negative.
+* An allocation strategy, in which the investment money is (usually) always invested, but the asset classes invested in are only the top 2 or 3 performing asset classes in the portfolio as long as those asset class prices are above the 10 month simple moving average and the performance of those asset classes is not negative.
 
 Because some of the ETFs chosen for the portfolio are newer than others, the evaluation only includes the dates for which all data is known. The baseline performance is represented by the ITOT ETF.
 
 ## Passive Strategy
-The annualized return for the passive strategy is `r passiveAnnualizedReturn`%. This is quite a bit lower than the baseline annualized return of `r baselineAnnualizedReturn`%. One of the benefits of a diversified and uncorrellated portfolio is that the drawdown should be less. Yet the passive strategy maximum drawdown is `r passiveMaxDrawdown`% while for the baseline, it is `r baselineMaxDrawdown`%. A passive strategy for this portfolio is not good for this investment timeframe. The growth of this portfolio is shown in the plot below.
+The annualized return for the passive strategy is `r passiveAnnualizedReturn`%. This is quite a bit lower than the baseline annualized return of `r baselineAnnualizedReturn`%. One of the benefits of a diversified and uncorrelated portfolio is that the draw-down should be less. Yet the passive strategy maximum draw-down is `r passiveMaxDrawdown`% while for the baseline, it is `r baselineMaxDrawdown`%. A passive strategy for this portfolio is not good for this investment time-frame. The growth of this portfolio is shown in the plot below.
 
 ```{r passivePerformancePlot}
 plotData <- rbind(passiveGrowthMonthly, baselineGrowthMonthly)
@@ -540,7 +568,7 @@ kable(lastTransactions[,c("etf", "type", "adjusted", "avg200", "action", "date")
       caption = "Last Transaction Date for Each ETF")
 ```
 
-The annualized return for the timing strategy is `r timingAnnualizedReturn`%. This is even lower than the passive annualized return of `r passiveAnnualizedReturn`%. The maximum drawdown for this strategy is `timingMaxDrawdown`% -- much lower than both the passive strategy maximum drawdown of `r passiveMaxDrawdown`% and the baseline maximum drawdown of `r baselineMaxDrawdown`%. The growth for this strategy is shown below.
+The annualized return for the timing strategy is `r timingAnnualizedReturn`%. This is even lower than the passive annualized return of `r passiveAnnualizedReturn`%. The maximum draw-down for this strategy is `timingMaxDrawdown`% -- much lower than both the passive strategy maximum draw-down of `r passiveMaxDrawdown`% and the baseline maximum draw-down of `r baselineMaxDrawdown`%. The growth for this strategy is shown below.
 
 ```{r timingPerformancePlot}
 plotData <- rbind(timingGrowthMonthly, passiveGrowthMonthly, baselineGrowthMonthly)
@@ -562,7 +590,7 @@ plotData %>%
 ## Using Rotation System
 An alternative to the timing strategy discussed above is the *Rotation* strategy which is an allocation strategy. In this strategy, all of the money is invested in the 2 best-performing asset classes that have returns above the 200 day simple moving average but the asset classes it is invested in can change (or rotate) from month to month. This strategy is designed to give some protection against individual ETF downturns since the investments are chosen to be uncorrelated[^top3]. One of the examples given in the book suggests investing equally in the top 3 performing ETFs. ETF performance is determined by averaging the 3, 6, and 12 month total returns. This calculation again uses the adjusted returns for the calculation and the performance evaluation is again only made on the first trading day of the month. As a tool to aid the investor as to which funds to invest in, the following plot shows the average total return for all of the ETFs, ordered high to low, left to right. Each bar shows the average return for an ETF. The color of the bar shows if the current adjusted price is above or below the 200 day simple moving average.
 
-The annualized return for the rotation strategy is `r rotationAnnualizedReturn`%. This is not much higher than the passive annualized return of `r passiveAnnualizedReturn`%. The maximum drawdown for this strategy is `rotationMaxDrawdown`% -- much lower than both the passive strategy maximum drawdown of `r passiveMaxDrawdown`% and the baseline maximum drawdown of `r baselineMaxDrawdown`%. The growth for this strategy is shown below.
+The annualized return for the rotation strategy is `r rotationAnnualizedReturn`%. This is not much higher than the passive annualized return of `r passiveAnnualizedReturn`%. The maximum draw-down for this strategy is `rotationMaxDrawdown`% -- much lower than both the passive strategy maximum draw-down of `r passiveMaxDrawdown`% and the baseline maximum draw-down of `r baselineMaxDrawdown`%. The growth for this strategy is shown below.
 
 ```{r rotationPerformancePlot}
 plotData <- rbind(timingGrowthMonthly, passiveGrowthMonthly,
@@ -584,19 +612,6 @@ plotData %>%
 [^top3]: I am not convinced that this rationale holds because the investments are correlated to some extent and it is reasonable to expect that those investment that are performing well at any given time might be more correlated than the average.
 
 
-# Dashboard
-
-```{r momentumBar}
-plotData <- decisions[decisions$date == max(decisions$date),]
-plotData$etf <- factor(plotData$etf,
-                       levels = plotData[order(plotData$avgReturn, decreasing = TRUE),]$etf,
-                       ordered = TRUE)
-ggplot(plotData) +
-  geom_bar(aes(x = etf, y = avgReturn, fill = position), stat = "identity") +
-  theme_tq() +
-  ggtitle("ETF Momentum", subtitle = "Investment in the 3 ETFs with the highest returns") +
-  ylab("Average Total Return")
-```
 
 
 # Refernces
