@@ -617,15 +617,17 @@ plotData %>%
 # Refernces
 
 ## Articles
-[Combining Rotation And Timing Systems](http://mebfaber.com/2009/06/25/combining-rotation-and-timing-systems/)
-[Timing Model](http://mebfaber.com/timing-model/)
-[Avoid Market Crashes Using the “Ivy Portfolio” Market-Timing System](https://www.investingdaily.com/18094/avoid-market-crashes-using-the-ivy-portfolio-market-timing-system)
-[Faber’s Ivy Portfolio: As Simple as Possible, But No Simpler](http://www.gestaltu.com/2014/02/faber-ivy-portfolio-as-simple-as-possible-but-no-simpler.html/)
-[Ivy-10 Portfolio 2014 Update](http://systemtradersuccess.com/ivy-10-portfolio-2014-update/)
+
+1. [Combining Rotation And Timing Systems](http://mebfaber.com/2009/06/25/combining-rotation-and-timing-systems/)
+2. [Timing Model](http://mebfaber.com/timing-model/)
+3. [Avoid Market Crashes Using the “Ivy Portfolio” Market-Timing System](https://www.investingdaily.com/18094/avoid-market-crashes-using-the-ivy-portfolio-market-timing-system)
+4. [Faber’s Ivy Portfolio: As Simple as Possible, But No Simpler](http://www.gestaltu.com/2014/02/faber-ivy-portfolio-as-simple-as-possible-but-no-simpler.html/)
+5. [Ivy-10 Portfolio 2014 Update](http://systemtradersuccess.com/ivy-10-portfolio-2014-update/)
 
 ## Tools
-[Analysis & Backtesting Tools for ETF Investors](https://www.etfreplay.com/)
-[ExtraTegic Dashboard](https://extradash.com/en/)
-[Portfolio Visualizer](https://www.portfoliovisualizer.com/)
-[Advisor Perspective Updates](https://www.advisorperspectives.com/dshort/updates) has an update on month-end moving averages under the "Market Timing" section.
+
+1. [Analysis & Backtesting Tools for ETF Investors](https://www.etfreplay.com/)
+2. [ExtraTegic Dashboard](https://extradash.com/en/)
+3. [Portfolio Visualizer](https://www.portfoliovisualizer.com/)
+4. [Advisor Perspective Updates](https://www.advisorperspectives.com/dshort/updates) has an update on month-end moving averages under the "Market Timing" section.
 

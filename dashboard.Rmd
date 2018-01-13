@@ -2,9 +2,11 @@
 title: "IvyDashboard"
 author: "Tim Jacobs"
 date: "1/2/2018"
-output: pdf_document
-header-includes:
-  - \newcommand{\graph}[3]{ \raisebox{-#1mm}{\includegraphics[height=#2em]{#3}}}
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+header-includes: \newcommand{\graph}[3]{ \raisebox{-#1mm}{\includegraphics[height=#2em]{#3}}}
 ---
 
 ```{r libraryOpts, echo=FALSE, message=FALSE, warning=FALSE}
@@ -250,11 +252,13 @@ ggplot(absReturnPlotData) +
 
 
 ```{r makePlotDataframe}
+daysOfHistory <- 300
+firstDate <- Sys.Date() - daysOfHistory
 a <- decisions
 a$date <- as.yearmon(a$date)
 a$key <- paste(a$date, a$etf)
 
-returnsPlotData <- assetMonthlyReturns[assetMonthlyReturns$date >= Sys.Date() - 600, ]
+returnsPlotData <- assetMonthlyReturns[assetMonthlyReturns$date >= firstDate, ]
 returnsPlotData$date <- as.yearmon(returnsPlotData$date)
 returnsPlotData$key <- paste(returnsPlotData$date, returnsPlotData$etf)
 returnsPlotData$position <- a[match(returnsPlotData$key, a$key),]$position
@@ -264,7 +268,7 @@ returnsPlotData$etf <- factor(returnsPlotData$etf,
 returnsPlotDataTop4 <- returnsPlotData[returnsPlotData$etf %in% top4,]
 returnsPlotDataBonds <- returnsPlotData[returnsPlotData$etf %in% c("TIP", "AGG"),]
 
-pricePlotData <- assetPriceHistory[assetPriceHistory$date >= Sys.Date() - 600, ]
+pricePlotData <- assetPriceHistory[assetPriceHistory$date >= firstDate, ]
 a <- rle(pricePlotData$position)
 groups <- rep(1:length(a$lengths), times = a$lengths)
 pricePlotData$group <- groups
@@ -274,6 +278,19 @@ pricePlotData$etf <- factor(pricePlotData$etf,
 pricePlotDataTop4 <- pricePlotData[pricePlotData$etf %in% top4,]
 pricePlotDataBonds <- pricePlotData[pricePlotData$etf %in% c("TIP", "AGG"),]
 rm(a, groups)
+```
+
+
+# Price Relative to 200 Day Moving Average
+
+```{r relativePricePlot}
+ggplot(assetPriceHistory[assetPriceHistory$date >= firstDate,]) +
+  geom_line(aes(x = date, y = adjusted/avg200)) +
+  geom_hline(yintercept = 1, color = "red") +
+  facet_wrap(~etf) +
+  theme_tq() +
+  # ylab("Adjusted Price as a % of 200 Day Average") +
+  scale_y_continuous(labels = percent)
 ```
 
 
@@ -297,7 +314,7 @@ ggplot() +
         axis.text.y = element_blank(),
         axis.title.y = element_blank()) +
   scale_fill_manual(values = c("green", "red")) +
-  scale_color_manual(values = c("red", "green")) 
+  scale_color_manual(values = c("green", "red")) 
 ```
 
 
