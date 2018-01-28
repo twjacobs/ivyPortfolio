@@ -3,9 +3,9 @@ title: "IvyDashboard"
 author: "Tim Jacobs"
 date: "1/2/2018"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 header-includes: \newcommand{\graph}[3]{ \raisebox{-#1mm}{\includegraphics[height=#2em]{#3}}}
 ---
 
@@ -207,26 +207,6 @@ buySell[which(buySell$action == "cash"),]$action <- "Sell"
 buySell[which(buySell$action == "invested"),]$action <- "Buy"
 
 rm(a, r)
-
-# Add scaled price and returns data
-assetPriceHistory$scaledPrice <- NA
-assetPriceHistory$scaledAvg200 <- NA
-assetMonthlyReturns$scaledReturns <- NA
-
-for(e in unique(assetPriceHistory$etf)){
-  a <- scale(assetPriceHistory[assetPriceHistory$etf == e, ]$adjusted)
-  b <- scale(assetPriceHistory[assetPriceHistory$etf == e, ]$avg200,
-             center = attr(a, "scaled:center"),
-             scale = attr(a, "scaled:scale"))
-  assetPriceHistory[which(assetPriceHistory$etf == e), ]$scaledPrice <- a
-  assetPriceHistory[which(assetPriceHistory$etf == e), ]$scaledAvg200 <- b
-  
-  a <- scale(assetMonthlyReturns[assetMonthlyReturns$etf == e, ]$monthly.returns,
-             center = FALSE)
-  assetMonthlyReturns[which(assetMonthlyReturns$etf == e), ]$scaledReturns <- a
-}
-
-rm(a, b, e)
 ```
 
 
@@ -251,9 +231,12 @@ ggplot(absReturnPlotData) +
 ```
 
 
-```{r makePlotDataframe}
+```{r makePlotDataframes}
+# Only use recent history
 daysOfHistory <- 300
 firstDate <- Sys.Date() - daysOfHistory
+
+# Create data frame for returns plots
 a <- decisions
 a$date <- as.yearmon(a$date)
 a$key <- paste(a$date, a$etf)
@@ -265,9 +248,8 @@ returnsPlotData$position <- a[match(returnsPlotData$key, a$key),]$position
 returnsPlotData$etf <- factor(returnsPlotData$etf,
                               levels(absReturnPlotData$etf),
                               ordered = TRUE)
-returnsPlotDataTop4 <- returnsPlotData[returnsPlotData$etf %in% top4,]
-returnsPlotDataBonds <- returnsPlotData[returnsPlotData$etf %in% c("TIP", "AGG"),]
 
+# Create data frame for price plots
 pricePlotData <- assetPriceHistory[assetPriceHistory$date >= firstDate, ]
 a <- rle(pricePlotData$position)
 groups <- rep(1:length(a$lengths), times = a$lengths)
@@ -275,9 +257,35 @@ pricePlotData$group <- groups
 pricePlotData$etf <- factor(pricePlotData$etf,
                             levels(absReturnPlotData$etf),
                             ordered = TRUE)
+
+
+# Add scaled price and returns data
+assetPriceHistory$scaledPrice <- NA
+assetPriceHistory$scaledAvg200 <- NA
+assetMonthlyReturns$scaledReturns <- NA
+
+for(e in unique(assetPriceHistory$etf)){
+  a <- scale(assetPriceHistory[assetPriceHistory$etf == e, ]$adjusted)
+  b <- scale(assetPriceHistory[assetPriceHistory$etf == e, ]$avg200)
+  assetPriceHistory[which(assetPriceHistory$etf == e), ]$scaledPrice <- a
+  assetPriceHistory[which(assetPriceHistory$etf == e), ]$scaledAvg200 <- b
+  
+  a <- scale(assetMonthlyReturns[assetMonthlyReturns$etf == e, ]$monthly.returns,
+             center = FALSE)
+  assetMonthlyReturns[which(assetMonthlyReturns$etf == e), ]$scaledReturns <- a
+}
+
+rm(a, b, e)
+
+
+# plot just the top 4 performing asset classes
+returnsPlotDataTop4 <- returnsPlotData[returnsPlotData$etf %in% top4,]
+returnsPlotDataBonds <- returnsPlotData[returnsPlotData$etf %in% c("TIP", "AGG"),]
+
 pricePlotDataTop4 <- pricePlotData[pricePlotData$etf %in% top4,]
 pricePlotDataBonds <- pricePlotData[pricePlotData$etf %in% c("TIP", "AGG"),]
 rm(a, groups)
+
 ```
 
 
@@ -289,30 +297,29 @@ ggplot(assetPriceHistory[assetPriceHistory$date >= firstDate,]) +
   geom_hline(yintercept = 1, color = "red") +
   facet_wrap(~etf) +
   theme_tq() +
-  # ylab("Adjusted Price as a % of 200 Day Average") +
+  ylab("Adjusted Price as a % of 200 Day Average") +
   scale_y_continuous(labels = percent)
 ```
 
 
 # Bull Market Monthly Performance (top 4 highest returns)
+Bar plots show the monthly returns. They are filled red if the monthly return is negative and green if positive. They are outlined red if the asset price is below the 200 day moving average on the monthly decision date, or green if the ending price is above the 200 day moving average.
+
 
 ```{r plotBullPerformance, fig.asp=0.65}
 ggplot() +
   geom_line(data = pricePlotDataTop4,
-            aes(x = date, y = scaledPrice)) +
-  geom_line(data = pricePlotDataTop4,
-            aes(x = date, y = scaledAvg200), color = "red") +
+            aes(x = date, y = adjusted/avg200-1)) +
   geom_bar(data = returnsPlotDataTop4,
-           aes(x = as.Date(date)+15, y = scaledReturns,
-               fill = scaledReturns < 0,
+           aes(x = as.Date(date), y = monthly.returns,
+               fill = monthly.returns < 0,
                color = position),
            alpha = 0.4,
            stat = "identity") +
   facet_grid(etf~.) +
   theme_tq() +
-  theme(legend.position = "none",
-        axis.text.y = element_blank(),
-        axis.title.y = element_blank()) +
+  theme(legend.position = "none") +
+  ylab("Bars represent monthly return\nlines are asset prices as percent of 200 day moving average") +
   scale_fill_manual(values = c("green", "red")) +
   scale_color_manual(values = c("green", "red")) 
 ```
@@ -323,20 +330,17 @@ ggplot() +
 ```{r plotBearPerformance, fig.asp=0.65}
 ggplot() +
   geom_line(data = pricePlotDataBonds,
-            aes(x = date, y = scaledPrice)) +
-  geom_line(data = pricePlotDataBonds,
-            aes(x = date, y = scaledAvg200), color = "red") +
+            aes(x = date, y = adjusted/avg200-1)) +
   geom_bar(data = returnsPlotDataBonds,
-           aes(x = as.Date(date)+15, y = scaledReturns,
-               fill = scaledReturns < 0,
+           aes(x = as.Date(date), y = monthly.returns,
+               fill = monthly.returns < 0,
                color = position),
            alpha = 0.4,
            stat = "identity") +
   facet_grid(etf~.) +
   theme_tq() +
-  theme(legend.position = "none",
-        axis.text.y = element_blank(),
-        axis.title.y = element_blank()) +
+  theme(legend.position = "none") +
+  ylab("Bars represent monthly return\nlines are asset prices as percent of 200 day moving average") +
   scale_fill_manual(values = c("green", "red")) +
   scale_color_manual(values = c("red", "green")) 
 ```
