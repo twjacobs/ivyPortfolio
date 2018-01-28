@@ -258,24 +258,7 @@ pricePlotData$etf <- factor(pricePlotData$etf,
                             levels(absReturnPlotData$etf),
                             ordered = TRUE)
 
-
-# Add scaled price and returns data
-assetPriceHistory$scaledPrice <- NA
-assetPriceHistory$scaledAvg200 <- NA
-assetMonthlyReturns$scaledReturns <- NA
-
-for(e in unique(assetPriceHistory$etf)){
-  a <- scale(assetPriceHistory[assetPriceHistory$etf == e, ]$adjusted)
-  b <- scale(assetPriceHistory[assetPriceHistory$etf == e, ]$avg200)
-  assetPriceHistory[which(assetPriceHistory$etf == e), ]$scaledPrice <- a
-  assetPriceHistory[which(assetPriceHistory$etf == e), ]$scaledAvg200 <- b
-  
-  a <- scale(assetMonthlyReturns[assetMonthlyReturns$etf == e, ]$monthly.returns,
-             center = FALSE)
-  assetMonthlyReturns[which(assetMonthlyReturns$etf == e), ]$scaledReturns <- a
-}
-
-rm(a, b, e)
+rm(a)
 
 
 # plot just the top 4 performing asset classes
