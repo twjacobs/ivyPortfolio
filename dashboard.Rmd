@@ -33,13 +33,14 @@ opts_chunk$set(warning = FALSE,
 today <- Sys.Date()
 
 etfs <- data.frame(ETF = c("DBA", "DBC", "IFGL", "IYR", "TIP",
-                           "AGG", "IEMG", "IEFA", "IJR", "ITOT"),
+                           "AGG", "IEMG", "EDC", "IEFA", "IJR", "ITOT"),
                    Type = c("Agriculture Futures", "Commodities", "Intl Real Estate",
                             "US Real Estate", "TIPs Bonds", "US Aggregated Bonds",
-                            "Emerging Markets", "Foreign Total", "S&P Small Cap",
+                            "Emerging Markets", "3x Emerging Markets", "Foreign Total",
+                            "S&P Small Cap",
                             "S&P Total"),
                    "Commission Free" = c("No", "No", "Yes", "No", "Yes",
-                                         "Yes", "Yes", "Yes", "Yes", "Yes"),
+                                         "Yes", "Yes", "No", "Yes", "Yes", "Yes"),
                    check.names = FALSE)
 
 # ETF Data
@@ -106,6 +107,15 @@ emergingMarkets <- tq_mutate(emergingMarkets, select = adjusted,
                              width = 200, align = "right",
                              col_rename = "avg200")
 
+emergingMarkets3x <- tq_get("EDC", get = "stock.prices",
+                      from = "2004-01-01", to = today)
+emergingMarkets3x$etf <- "EDC"
+emergingMarkets3x$type <- etfs[etfs$ETF == "EDC",]$Type
+emergingMarkets3x <- tq_mutate(emergingMarkets3x, select = adjusted,
+                             mutate_fun = rollapply, FUN = mean,
+                             width = 200, align = "right",
+                             col_rename = "avg200")
+
 foreignTotal <- tq_get("IEFA", get = "stock.prices",
                       from = "2004-01-01", to = today)
 foreignTotal$etf <- "IEFA"
@@ -135,7 +145,7 @@ sAndPTotal <- tq_mutate(sAndPTotal, select = adjusted,
 
 assetPriceHistory <- rbind(agricultural, commodities, internationalRealEstate,
                            usRealEstate, tipsBond, aggregatedBond, emergingMarkets,
-                           foreignTotal, sAndPSmallCap, sAndPTotal)
+                           emergingMarkets3x, foreignTotal, sAndPSmallCap, sAndPTotal)
 # Asset Returns
 assetMonthlyReturns <- assetPriceHistory %>%
     group_by(etf) %>%
