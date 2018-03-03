@@ -3,9 +3,9 @@ title: "IvyDashboard"
 author: "Tim Jacobs"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
 header-includes: \newcommand{\graph}[3]{ \raisebox{-#1mm}{\includegraphics[height=#2em]{#3}}}
 ---
 
@@ -268,15 +268,18 @@ pricePlotData$etf <- factor(pricePlotData$etf,
                             levels(absReturnPlotData$etf),
                             ordered = TRUE)
 
-rm(a)
-
-
-# plot just the top 4 performing asset classes
+# isolate top 4 performing ETFs
 returnsPlotDataTop4 <- returnsPlotData[returnsPlotData$etf %in% top4,]
-returnsPlotDataBonds <- returnsPlotData[returnsPlotData$etf %in% c("TIP", "AGG"),]
-
 pricePlotDataTop4 <- pricePlotData[pricePlotData$etf %in% top4,]
+
+# isolate bond ETFs (bear market)
+returnsPlotDataBonds <- returnsPlotData[returnsPlotData$etf %in% c("TIP", "AGG"),]
 pricePlotDataBonds <- pricePlotData[pricePlotData$etf %in% c("TIP", "AGG"),]
+
+# isolate aggressive ETFs (bull market)
+returnsPlotDataBull <- returnsPlotData[returnsPlotData$etf %in% c("EDC"),]
+pricePlotDataBull <- pricePlotData[pricePlotData$etf %in% c("EDC"),]
+
 rm(a, groups)
 
 ```
@@ -312,9 +315,10 @@ ggplot() +
   facet_grid(etf~.) +
   theme_tq() +
   theme(legend.position = "none") +
-  ylab("Bars represent monthly return\nlines are asset prices as percent of 200 day moving average") +
   scale_fill_manual(values = c("green", "red")) +
-  scale_color_manual(values = c("green", "red")) 
+  scale_color_manual(values = c("green", "red")) +
+  ggtitle("Bull Market ETF Performance") +
+  ylab("Bars are monthly returns\nlines are ETF prices (% above/below 200 day moving average")
 ```
 
 
@@ -333,8 +337,9 @@ ggplot() +
   facet_grid(etf~.) +
   theme_tq() +
   theme(legend.position = "none") +
-  ylab("Bars represent monthly return\nlines are asset prices as percent of 200 day moving average") +
   scale_fill_manual(values = c("green", "red")) +
-  scale_color_manual(values = c("red", "green")) 
+  scale_color_manual(values = c("red", "green")) +
+  ggtitle("Bear Market ETF Performance") +
+  ylab("Bars are monthly return\nlines are ETF prices (% above/below 200 day moving average")
 ```
 
