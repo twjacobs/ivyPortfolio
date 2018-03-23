@@ -315,7 +315,7 @@ ggplot() +
   facet_grid(etf~.) +
   theme_tq() +
   theme(legend.position = "none") +
-  scale_fill_manual(values = c("green", "red")) +
+  scale_fill_manual(values = c("red", "green")) +
   scale_color_manual(values = c("green", "red")) +
   ggtitle("Bull Market ETF Performance") +
   ylab("Bars are monthly returns\nlines are ETF prices (% above/below 200 day moving average")
