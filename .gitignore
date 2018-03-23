@@ -5,6 +5,8 @@
 scrap.R
 *.odt
 *.ods
+*.pdf
+*.html
 The Ivy Portfolio (Faber and Richardson).pdf
 Monthly Ivy Portfolio Report.pdf
 Ivy Portfolio.Rproj
