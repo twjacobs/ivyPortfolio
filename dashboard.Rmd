@@ -32,6 +32,7 @@ opts_chunk$set(warning = FALSE,
 ```{r getEtfData}
 today <- Sys.Date()
 
+# ETF Data
 etfs <- data.frame(ETF = c("DBA", "DBC", "IFGL", "IYR", "TIP",
                            "AGG", "IEMG", "EDC", "IEFA", "IJR", "ITOT"),
                    Type = c("Agriculture Futures", "Commodities", "Intl Real Estate",
@@ -43,7 +44,9 @@ etfs <- data.frame(ETF = c("DBA", "DBC", "IFGL", "IYR", "TIP",
                                          "Yes", "Yes", "No", "Yes", "Yes", "Yes"),
                    check.names = FALSE)
 
-# ETF Data
+#############################
+# Agricultural (DBA)
+############################
 agricultural <- tq_get("DBA", get = "stock.prices",
                       from = "2004-01-01", to = today)
 agricultural$etf <- "DBA"
@@ -53,6 +56,9 @@ agricultural <- tq_mutate(agricultural, select = adjusted,
                           width = 200, align = "right",
                           col_rename = "avg200")
 
+#############################
+# Commodities (DBC)
+############################
 commodities <- tq_get("DBC", get = "stock.prices",
                       from = "2004-01-01", to = today)
 commodities$etf <- "DBC"
@@ -62,6 +68,9 @@ commodities <- tq_mutate(commodities, select = adjusted,
                          width = 200, align = "right",
                          col_rename = "avg200")
 
+#############################
+# International Real Estate (IFGL)
+############################
 internationalRealEstate <- tq_get("IFGL", get = "stock.prices",
                       from = "2004-01-01", to = today)
 internationalRealEstate$etf <- "IFGL"
@@ -71,6 +80,9 @@ internationalRealEstate <- tq_mutate(internationalRealEstate, select = adjusted,
                                      width = 200, align = "right",
                                      col_rename = "avg200")
 
+#############################
+# US Real Estate (IYR)
+############################
 usRealEstate <- tq_get("IYR", get = "stock.prices",
                       from = "2004-01-01", to = today)
 usRealEstate$etf <- "IYR"
@@ -80,6 +92,9 @@ usRealEstate <- tq_mutate(usRealEstate, select = adjusted,
                           width = 200, align = "right",
                           col_rename = "avg200")
 
+#############################
+# TIPS Bonds (TIP)
+############################
 tipsBond <- tq_get("TIP", get = "stock.prices",
                       from = "2004-01-01", to = today)
 tipsBond$etf <- "TIP"
@@ -89,6 +104,9 @@ tipsBond <- tq_mutate(tipsBond, select = adjusted,
                       width = 200, align = "right",
                       col_rename = "avg200")
 
+#############################
+# Aggregated Bond (AGG)
+############################
 aggregatedBond <- tq_get("AGG", get = "stock.prices",
                       from = "2004-01-01", to = today)
 aggregatedBond$etf <- "AGG"
@@ -98,6 +116,9 @@ aggregatedBond <- tq_mutate(aggregatedBond, select = adjusted,
                             width = 200, align = "right",
                             col_rename = "avg200")
 
+#############################
+# Emerging Markets (IEMG)
+############################
 emergingMarkets <- tq_get("IEMG", get = "stock.prices",
                       from = "2004-01-01", to = today)
 emergingMarkets$etf <- "IEMG"
@@ -107,6 +128,9 @@ emergingMarkets <- tq_mutate(emergingMarkets, select = adjusted,
                              width = 200, align = "right",
                              col_rename = "avg200")
 
+#############################
+# Emerging Markets 3X (EDC)
+############################
 emergingMarkets3x <- tq_get("EDC", get = "stock.prices",
                       from = "2004-01-01", to = today)
 emergingMarkets3x$etf <- "EDC"
@@ -116,6 +140,9 @@ emergingMarkets3x <- tq_mutate(emergingMarkets3x, select = adjusted,
                              width = 200, align = "right",
                              col_rename = "avg200")
 
+#############################
+# Foreign Total (IEFA)
+############################
 foreignTotal <- tq_get("IEFA", get = "stock.prices",
                       from = "2004-01-01", to = today)
 foreignTotal$etf <- "IEFA"
@@ -125,6 +152,9 @@ foreignTotal <- tq_mutate(foreignTotal, select = adjusted,
                           width = 200, align = "right",
                           col_rename = "avg200")
 
+#############################
+# S&P Small Cap (IJR)
+############################
 sAndPSmallCap <- tq_get("IJR", get = "stock.prices",
                       from = "2004-01-01", to = today)
 sAndPSmallCap$etf <- "IJR"
@@ -134,6 +164,9 @@ sAndPSmallCap <- tq_mutate(sAndPSmallCap, select = adjusted,
                            width = 200, align = "right",
                            col_rename = "avg200")
 
+#############################
+# S&P Total (ITOT)
+############################
 sAndPTotal <- tq_get("ITOT", get = "stock.prices",
                       from = "2004-01-01", to = today)
 sAndPTotal$etf <- "ITOT"
@@ -308,16 +341,17 @@ ggplot() +
             aes(x = date, y = adjusted/avg200-1)) +
   geom_bar(data = returnsPlotDataTop4,
            aes(x = as.Date(date), y = monthly.returns,
-               fill = monthly.returns < 0,
-               color = position),
+               fill = monthly.returns < 0),
+               # color = position),
            alpha = 0.4,
            stat = "identity") +
+  geom_hline(yintercept = 0, color = "blue") +
   facet_grid(etf~.) +
   theme_tq() +
   theme(legend.position = "none") +
   scale_fill_manual(values = c("green", "red")) +
   scale_color_manual(values = c("red", "green")) +
-  ggtitle("Bull Market ETF Performance") +
+  ggtitle("Top Four Performing ETFs Performance") +
   ylab("Bars are monthly returns\nlines are ETF prices (% above/below 200 day moving average")
 ```
 
@@ -330,10 +364,11 @@ ggplot() +
             aes(x = date, y = adjusted/avg200-1)) +
   geom_bar(data = returnsPlotDataBonds,
            aes(x = as.Date(date), y = monthly.returns,
-               fill = monthly.returns < 0,
-               color = position),
+               fill = monthly.returns < 0.0),
+               # color = position),
            alpha = 0.4,
            stat = "identity") +
+  geom_hline(yintercept = 0, color = "blue") +
   facet_grid(etf~.) +
   theme_tq() +
   theme(legend.position = "none") +

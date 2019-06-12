@@ -508,7 +508,7 @@ In this section the portfolio performance is evaluated using several different i
 Because some of the ETFs chosen for the portfolio are newer than others, the evaluation only includes the dates for which all data is known. The baseline performance is represented by the ITOT ETF.
 
 ## Passive Strategy
-The annualized return for the passive strategy is `r passiveAnnualizedReturn`%. This is quite a bit lower than the baseline annualized return of `r baselineAnnualizedReturn`%. One of the benefits of a diversified and uncorrelated portfolio is that the draw-down should be less. Yet the passive strategy maximum draw-down is `r passiveMaxDrawdown`% while for the baseline, it is `r baselineMaxDrawdown`%. A passive strategy for this portfolio is not good for this investment time-frame. The growth of this portfolio is shown in the plot below.
+The annualized return for the passive strategy is `r passiveAnnualizedReturn`%. This is quite a bit lower than the baseline annualized return of `r baselineAnnualizedReturn`%. One of the benefits of a diversified and uncorrelated portfolio is that the draw-down should be less. The passive strategy maximum draw-down is `r passiveMaxDrawdown`% while for the baseline, it is `r baselineMaxDrawdown`%. A passive strategy for this portfolio is not good for this investment time-frame. The growth of this portfolio is shown in the plot below.
 
 ```{r passivePerformancePlot}
 plotData <- rbind(passiveGrowthMonthly, baselineGrowthMonthly)
@@ -568,7 +568,7 @@ kable(lastTransactions[,c("etf", "type", "adjusted", "avg200", "action", "date")
       caption = "Last Transaction Date for Each ETF")
 ```
 
-The annualized return for the timing strategy is `r timingAnnualizedReturn`%. This is even lower than the passive annualized return of `r passiveAnnualizedReturn`%. The maximum draw-down for this strategy is `timingMaxDrawdown`% -- much lower than both the passive strategy maximum draw-down of `r passiveMaxDrawdown`% and the baseline maximum draw-down of `r baselineMaxDrawdown`%. The growth for this strategy is shown below.
+The annualized return for the timing strategy is `r timingAnnualizedReturn`% compared to the passive annualized return of `r passiveAnnualizedReturn`%. The maximum draw-down for this strategy is `r timingMaxDrawdown`% whereas the passive strategy maximum draw-down is `r passiveMaxDrawdown`% and the baseline maximum draw-down is `r baselineMaxDrawdown`%. The growth for this strategy is shown below.
 
 ```{r timingPerformancePlot}
 plotData <- rbind(timingGrowthMonthly, passiveGrowthMonthly, baselineGrowthMonthly)
@@ -590,7 +590,7 @@ plotData %>%
 ## Using Rotation System
 An alternative to the timing strategy discussed above is the *Rotation* strategy which is an allocation strategy. In this strategy, all of the money is invested in the 2 best-performing asset classes that have returns above the 200 day simple moving average but the asset classes it is invested in can change (or rotate) from month to month. This strategy is designed to give some protection against individual ETF downturns since the investments are chosen to be uncorrelated[^top3]. One of the examples given in the book suggests investing equally in the top 3 performing ETFs. ETF performance is determined by averaging the 3, 6, and 12 month total returns. This calculation again uses the adjusted returns for the calculation and the performance evaluation is again only made on the first trading day of the month. As a tool to aid the investor as to which funds to invest in, the following plot shows the average total return for all of the ETFs, ordered high to low, left to right. Each bar shows the average return for an ETF. The color of the bar shows if the current adjusted price is above or below the 200 day simple moving average.
 
-The annualized return for the rotation strategy is `r rotationAnnualizedReturn`%. This is not much higher than the passive annualized return of `r passiveAnnualizedReturn`%. The maximum draw-down for this strategy is `rotationMaxDrawdown`% -- much lower than both the passive strategy maximum draw-down of `r passiveMaxDrawdown`% and the baseline maximum draw-down of `r baselineMaxDrawdown`%. The growth for this strategy is shown below.
+The annualized return for the rotation strategy is `r rotationAnnualizedReturn`% compared to the passive annualized return of `r passiveAnnualizedReturn`%. The maximum draw-down for this strategy is `r rotationMaxDrawdown`% as compared to the passive strategy maximum draw-down of `r passiveMaxDrawdown`% and the baseline maximum draw-down of `r baselineMaxDrawdown`%. The growth for this strategy is shown below.
 
 ```{r rotationPerformancePlot}
 plotData <- rbind(timingGrowthMonthly, passiveGrowthMonthly,
